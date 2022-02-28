@@ -1,37 +1,59 @@
+#Nagmat Nazarov, February 28, 2022. 
+#CS791.1006 : Distributed Computing class. Programming Assignment 1. 
+
 from mpi4py import MPI
 import sys 
 import hashlib
 import time
 import random 
-setir = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqstuvwxyz"
+import argparse
 
+
+chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqstuvwxyz"
+
+# Function which returns the hashlib with appropriate number of zeros
 def find_T(t):
     start = time.time()
     boole = True
     soz =""
     acar = ""
-    print("T= ",t)
     for x in range(0,t) : 
         acar = acar + '0'
-    print("Acar = ",acar)
     while boole :
-        san = random.randint(0,len(setir)) 
-        #print("San = {} \n".format(san))
-        #print("harp = {} Soz = {} ".format(setir[san-1],soz))
-        soz = soz  + setir[san-1] 
+        san = random.randint(0,len(chars)) 
+        soz = soz  + chars[san-1] 
         m = hashlib.new('sha256')
         m.update(soz.encode())
         sozlem = m.hexdigest()
-        if sozlem[0]=='0' : 
+        if sozlem.find(acar) == 0 : 
             boole = False
             
-        #print(sozlem)
     elapsed_time = time.time()-start 
-    print("Sozlem = ",sozlem)
-    return elapsed_time, soz 
+    return elapsed_time, sozlem 
 
-#print("Setir = {} sany = {} ".format(setir,len(setir)))
-t = 1 
+
+# Function for pruning T from system arguments
+def komek(): 
+    if len(sys.argv)>=2:
+        inp = sys.argv[1]
+    else :
+        print("No parameter for T was included, please include T as a second parameter on console.")
+        exit()
+
+    try : 
+        t = int(inp)
+    except ValueError:  
+        print('Incorrect integer : ', sys.argv[1])
+        exit()
+
+    if (t<1) or (t>10): 
+        print("T can't be zero, it should be a number between 1 to n=10")
+        exit();
+    return t
+
+
+#Begin the main program
+t = komek()
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
